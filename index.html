@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Side-vineal — take what you get</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Righteous&family=Helvetica+Neue:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #E2E4E8;
+    --bg-panel: #E2E4E8;
+    --bg-panel-raised: #E2E4E8;
+    --record: #1E1F1E;
+    --record-groove: #29302D;
+    --amber: #BEAD8E;
+    --amber-dim: #5D5C70;
+    --teal: #5D5C70;
+    --text: #1E1F1E;
+    --text-dim: #242826;
+    --text-faint: #29302D;
+    --border: #1E1F1E;
+    --font-display: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --font-logo: 'Righteous', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --font-body: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --font-mono: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  }
+
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+  }
+
+  :root[data-theme="light"] {
+    --bg: #f2ece0;
+    --bg-panel: #ffffff;
+    --bg-panel-raised: #fbf7ee;
+    --record: #1c1620;
+    --record-groove: #2c2432;
+    --amber: #b9761f;
+    --amber-dim: #8f5d18;
+    --teal: #227a75;
+    --text: #241f2b;
+    --text-dim: #5c5266;
+    --text-faint: #8a8091;
+    --border: #ddd2c2;
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f2ece0;
+      --bg-panel: #ffffff;
+      --bg-panel-raised: #fbf7ee;
+      --record: #1c1620;
+      --record-groove: #2c2432;
+      --amber: #b9761f;
+      --amber-dim: #8f5d18;
+      --teal: #227a75;
+      --text: #241f2b;
+      --text-dim: #5c5266;
+      --text-faint: #8a8091;
+      --border: #ddd2c2;
+      color-scheme: light;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 48px 20px 64px;
+  }
+
+  .page {
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  h1 {
+    font-family: var(--font-logo);
+    font-weight: 700;
+    font-size: clamp(2.4rem, 9vw, 3.4rem);
+    margin: 0;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+
+  .tagline {
+    font-size: 1rem;
+    color: var(--text-dim);
+    margin: 10px 0 0;
+    max-width: 34ch;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.5;
+  }
+
+  .player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 26px;
+    margin-bottom: 30px;
+  }
+
+  .turntable {
+    position: relative;
+    width: 210px;
+    height: 210px;
+  }
+
+  .disc {
+    width: 210px;
+    height: 210px;
+    border-radius: 50%;
+    background:
+      repeating-radial-gradient(
+        circle at center,
+        var(--record) 0px,
+        var(--record) 3px,
+        var(--record-groove) 3px,
+        var(--record-groove) 4px
+      );
+    box-shadow: inset 0 0 0 1px var(--border);
+    position: relative;
+    animation: idle-spin 14s linear infinite;
+  }
+
+  .disc::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 62px;
+    height: 62px;
+    background: var(--amber);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .disc::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    background: var(--bg);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+  }
+
+  .disc.spinning {
+    animation: fast-spin 0.9s linear infinite;
+  }
+
+  @keyframes idle-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes fast-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .tonearm {
+    position: absolute;
+    top: -14px;
+    right: -18px;
+    width: 90px;
+    height: 90px;
+    transform: rotate(-38deg);
+    transform-origin: 84px 6px;
+    transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+    pointer-events: none;
+  }
+
+  .tonearm.dropped {
+    transform: rotate(-4deg);
+  }
+
+  .tonearm-body {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 6px;
+    height: 78px;
+    background: var(--text-faint);
+    border-radius: 3px;
+  }
+
+  .tonearm-pivot {
+    position: absolute;
+    top: -2px;
+    right: -3px;
+    width: 16px;
+    height: 16px;
+    background: var(--bg-panel-raised);
+    border: 2px solid var(--text-faint);
+    border-radius: 50%;
+  }
+
+  .spin-btn {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
+    padding: 14px 40px;
+    background: var(--amber);
+    color: var(--record);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.1s ease, background 0.15s ease;
+  }
+
+  .spin-btn:hover:not(:disabled) {
+    background: #f0b354;
+  }
+
+  .spin-btn:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  .spin-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  .spin-btn:focus-visible,
+  .track-link:focus-visible,
+  .preview-btn:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 2px;
+  }
+
+  .readout {
+    width: 100%;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 26px 24px;
+    min-height: 148px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .readout-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--teal);
+    margin: 0 0 10px;
+  }
+
+  .readout-empty {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--text-faint);
+    text-align: center;
+  }
+
+  .verdict {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 0.95rem;
+    color: var(--text);
+    background: var(--bg-panel-raised);
+    border-left: 3px solid var(--amber);
+    padding: 10px 14px;
+    border-radius: 0 4px 4px 0;
+    margin: 0 0 18px;
+  }
+
+  .readout-content {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+  }
+
+  .album-art {
+    width: 84px;
+    height: 84px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    background: var(--bg-panel-raised);
+    overflow: hidden;
+  }
+
+  .album-art img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .track-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .track-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 4px;
+    line-height: 1.25;
+  }
+
+  .track-artist {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--text-dim);
+    margin: 0 0 4px;
+  }
+
+  .track-tag {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--text-faint);
+    margin: 0 0 14px;
+  }
+
+  .track-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .track-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--record);
+    background: var(--teal);
+    padding: 10px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    width: fit-content;
+    transition: background 0.15s ease;
+  }
+
+  :root[data-theme="light"] .track-link,
+  @media (prefers-color-scheme: light) {
+    .track-link { color: #fff; }
+  }
+
+  .track-link:hover {
+    background: #6dd4cf;
+  }
+
+  .preview-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 9px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .preview-btn:hover {
+    border-color: var(--teal);
+    color: var(--text);
+  }
+
+  footer {
+    margin-top: 44px;
+    font-size: 0.82rem;
+    color: var(--text-faint);
+    text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .disc, .disc.spinning { animation: none; }
+    .tonearm { transition: none; }
+  }
+
+  @media (max-width: 420px) {
+    .turntable, .disc { width: 176px; height: 176px; }
+    .disc::after { width: 52px; height: 52px; }
+    .readout-content { flex-direction: column; align-items: flex-start; }
+    .album-art { width: 100%; height: 160px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>Side-vineal</h1>
+    <p class="tagline">No mood-picking. A message from the universe. Hit spin.</p>
+  </header>
+
+  <div class="player">
+    <div class="turntable">
+      <div class="disc" id="disc"></div>
+      <div class="tonearm" id="tonearm">
+        <div class="tonearm-pivot"></div>
+        <div class="tonearm-body"></div>
+      </div>
+    </div>
+    <button class="spin-btn" id="spinBtn">Spin</button>
+  </div>
+
+  <div class="readout" id="readout" aria-live="polite">
+    <p class="readout-empty">Hit spin. You don't get a say.</p>
+  </div>
+
+  <footer>A little music roulette... and a horoscope.</footer>
+</div>
+
+<script>
+  var tracks = [
+    { title: "Ain't It Funny", artist: "Danny Brown", tag: "hip hop" },
+    { title: "Respiration", artist: "Black Star", tag: "hip hop" },
+    { title: "Get Ur Freak On", artist: "Missy Elliott", tag: "hip hop" },
+    { title: "Jailbreak the Tesla", artist: "Injury Reserve (feat. Aminé)", tag: "hip hop" },
+    { title: "Accordion", artist: "Madvillain", tag: "hip hop" },
+
+    { title: "Perfectly", artist: "FKA twigs", tag: "pop" },
+    { title: "Tearin' Up My Heart", artist: "*NSYNC", tag: "pop" },
+    { title: "Nothing Really Matters", artist: "Madonna", tag: "pop" },
+    { title: "Overpowered", artist: "Róisín Murphy", tag: "pop" },
+    { title: "Off The Wall", artist: "Michael Jackson", tag: "pop" },
+
+    { title: "Tangled Up In Blue", artist: "Bob Dylan", tag: "folk" },
+    { title: "Place To Be", artist: "Nick Drake", tag: "folk" },
+    { title: "Mississippi", artist: "The Cactus Blossoms", tag: "folk" },
+    { title: "Drake", artist: "Beth Gibbons, Rustin Man", tag: "folk" },
+    { title: "It's Raining Today", artist: "Scott Walker", tag: "folk" },
+
+    { title: "Sunday", artist: "Narrow Head", tag: "rock" },
+    { title: "Love Lies Here", artist: "Faces", tag: "rock" },
+    { title: "Fools Gold", artist: "The Stone Roses", tag: "rock" },
+    { title: "Ape Dos Mil", artist: "Glassjaw", tag: "rock" },
+    { title: "Slide Away", artist: "The Verve", tag: "rock" },
+
+    { title: "Afro Blue", artist: "Robert Glasper feat. Erykah Badu", tag: "jazz" },
+    { title: "The Star-Crossed Lovers", artist: "Duke Ellington", tag: "jazz" },
+    { title: "Just For A Trill", artist: "Lou Donaldson", tag: "jazz" },
+    { title: "Passion Flower", artist: "Grover Washington, Jr.", tag: "jazz" },
+    { title: "B Minor Waltz", artist: "Bill Evans", tag: "jazz" },
+
+    { title: "Hatfield 1980", artist: "Everything But The Girl", tag: "electronic" },
+    { title: "Ballet Lane", artist: "Underworld", tag: "electronic" },
+    { title: "Modular Mix", artist: "Air", tag: "electronic" },
+    { title: "CMYK", artist: "James Blake", tag: "electronic" },
+    { title: "84 Pontiac Dream", artist: "Boards of Canada", tag: "electronic" }
+  ];
+
+  var verdicts = {
+    "hip hop": [
+      "Mars is asking you to turn the volume up.",
+      "Mercury has something to say, but show him a little move first."
+    ],
+    "pop": [
+      "Aphrodite says you go monarch…",
+      "Your Venus says listen to mainstream music for once please"
+    ],
+    "folk": [
+      "The 12th house is telling you to go full hermit mode for a week.",
+      "It's the retrograde season. Embrace yourself."
+    ],
+    "rock": [
+      "Mars is moving from your 12th house to the 1st.",
+      "Aries energy is taking over today."
+    ],
+    "jazz": [
+      "The Moon is humming. Listen.",
+      "A day in the life of Neptune."
+    ],
+    "electronic": [
+      "Uranus is here. Yeah. Prepare, I guess.",
+      "Can you hear the signals?"
+    ]
+  };
+
+  var fallbackVerdicts = [
+    "No context. Just listen.",
+    "Make of this what you will.",
+    "You didn't ask, but here it is anyway."
+  ];
+
+  function pickVerdict(tag) {
+    var pool = verdicts[tag] || fallbackVerdicts;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  var disc = document.getElementById("disc");
+  var tonearm = document.getElementById("tonearm");
+  var spinBtn = document.getElementById("spinBtn");
+  var readout = document.getElementById("readout");
+
+  var audioEl = new Audio();
+  var currentPreviewBtn = null;
+
+  function stopPreview() {
+    audioEl.pause();
+    audioEl.currentTime = 0;
+    if (currentPreviewBtn) {
+      currentPreviewBtn.textContent = "▶ Preview";
+    }
+    currentPreviewBtn = null;
+  }
+
+  audioEl.addEventListener("ended", stopPreview);
+
+  var lastTitle = null;
+
+  function pickTrack() {
+    var pool = tracks;
+    if (pool.length > 1 && lastTitle) {
+      var filtered = pool.filter(function (t) { return t.title !== lastTitle; });
+      if (filtered.length > 0) pool = filtered;
+    }
+    var choice = pool[Math.floor(Math.random() * pool.length)];
+    lastTitle = choice.title;
+    return choice;
+  }
+
+  var jsonpCounter = 0;
+  function fetchTrackMeta(track) {
+    return new Promise(function (resolve) {
+      var query = encodeURIComponent(track.title + " " + track.artist);
+      var callbackName = "spindleCallback" + (jsonpCounter++);
+      var timeoutId;
+
+      function cleanup() {
+        delete window[callbackName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+      }
+
+      window[callbackName] = function (data) {
+        clearTimeout(timeoutId);
+        cleanup();
+        if (data.results && data.results.length > 0) {
+          var r = data.results[0];
+          resolve({
+            artwork: r.artworkUrl100 ? r.artworkUrl100.replace("100x100", "300x300") : null,
+            preview: r.previewUrl || null
+          });
+        } else {
+          resolve({ artwork: null, preview: null });
+        }
+      };
+
+      var script = document.createElement("script");
+      script.src = "https://itunes.apple.com/search?term=" + query + "&media=music&limit=1&callback=" + callbackName;
+      script.onerror = function () {
+        cleanup();
+        resolve({ artwork: null, preview: null });
+      };
+      document.body.appendChild(script);
+
+      timeoutId = setTimeout(function () {
+        cleanup();
+        resolve({ artwork: null, preview: null });
+      }, 5000);
+    });
+  }
+
+  function renderTrack(track) {
+    stopPreview();
+    var query = encodeURIComponent(track.title + " " + track.artist);
+    var verdict = pickVerdict(track.tag);
+    readout.innerHTML =
+      '<p class="readout-label">random horoscope, like it or not</p>' +
+      '<p class="verdict">' + verdict + '</p>' +
+      '<div class="readout-content">' +
+        '<div class="album-art" id="albumArt"></div>' +
+        '<div class="track-info">' +
+          '<p class="track-title">' + track.title + '</p>' +
+          '<p class="track-artist">' + track.artist + '</p>' +
+          '<p class="track-tag">' + track.tag + '</p>' +
+          '<div class="track-actions">' +
+            '<a class="track-link" href="https://www.youtube.com/results?search_query=' + query + '" target="_blank" rel="noopener">Search on YouTube</a>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    fetchTrackMeta(track).then(function (meta) {
+      var artEl = document.getElementById("albumArt");
+      if (artEl && meta.artwork) {
+        artEl.innerHTML = '<img src="' + meta.artwork + '" alt="' + track.title + ' album art">';
+      }
+      if (meta.preview) {
+        var actions = readout.querySelector(".track-actions");
+        if (actions) {
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "preview-btn";
+          btn.textContent = "▶ Preview";
+          btn.addEventListener("click", function () {
+            if (currentPreviewBtn === btn && !audioEl.paused) {
+              stopPreview();
+              return;
+            }
+            stopPreview();
+            audioEl.src = meta.preview;
+            audioEl.play();
+            btn.textContent = "⏸ Playing";
+            currentPreviewBtn = btn;
+          });
+          actions.insertBefore(btn, actions.firstChild);
+        }
+      }
+    });
+  }
+
+  spinBtn.addEventListener("click", function () {
+    stopPreview();
+    spinBtn.disabled = true;
+    disc.classList.add("spinning");
+    tonearm.classList.add("dropped");
+
+    setTimeout(function () {
+      var track = pickTrack();
+      renderTrack(track);
+      disc.classList.remove("spinning");
+      spinBtn.disabled = false;
+    }, 900);
+
+    setTimeout(function () {
+      tonearm.classList.remove("dropped");
+    }, 2400);
+  });
+</script>
+</body>
+</html>
